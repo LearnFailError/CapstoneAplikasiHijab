@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspaces/CapstoneAplikasiHijab:cached
+    working_dir: /workspaces/CapstoneAplikasiHijab/hijab-store
+    command: sleep infinity
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: hijab_store
+      DB_USERNAME: hijab_store
+      DB_PASSWORD: hijab_store_dev
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+      SCOUT_DRIVER: typesense
+      TYPESENSE_API_KEY: xyz
+      TYPESENSE_HOST: typesense
+      TYPESENSE_PORT: "8108"
+      TYPESENSE_PROTOCOL: http
+    depends_on:
+      db:
+        condition: service_healthy
+      typesense:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      MYSQL_DATABASE: hijab_store
+      MYSQL_USER: hijab_store
+      MYSQL_PASSWORD: hijab_store_dev
+      MYSQL_ROOT_PASSWORD: root_dev_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  typesense:
+    image: typesense/typesense:27.1
+    restart: unless-stopped
+    command: "--data-dir /data --api-key=xyz --enable-cors"
+    volumes:
+      - typesense-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8108/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  mysql-data:
+  typesense-data:

@@ -1,0 +1,7 @@
+{
+  "name": "Laravel Hijab Store",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/CapstoneAplikasiHijab/hijab-store",
+  "forwardPorts": [8000, 8108]
+}
